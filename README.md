@@ -3,7 +3,7 @@ UnityでVRMアバターの表情をTimelineで制御するスクリプトです
 
 旧バージョンのVRM(VRM 0.xx)が対象です
 
-## 概要
+## 概要と解説
 スクリプトの概要はpixivFANBOXにて記事を出しています
 https://maron.fanbox.cc/posts/4840242
 
