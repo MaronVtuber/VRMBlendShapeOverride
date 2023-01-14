@@ -47,14 +47,14 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
 
         var time = Director.time;
 
-        // �u�����������v
+        // 「あいうえお」
         var value_A = 0f;
         var value_I = 0f;
         var value_U = 0f;
         var value_E = 0f;
         var value_O = 0f;
 
-        // �u��{���y�v
+        // 「喜怒哀楽」
         var value_Angry = 0f;
         var value_Blink = 0f;
         var value_Blink_L = 0f;
@@ -79,7 +79,7 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
             {
                 switch (behaviour.blendShapePreset)
                 {
-                    // �u�����������v
+                    // 「あいうえお」
                     case BlendShapePreset.A:
                         value_A += clipWeight * behaviour.blendShapeValue;
                         isLipSync = true;
@@ -104,7 +104,7 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
                         isLipSync = true;
                         break;
 
-                    // �u��{���y�v
+                    // 「喜怒哀楽」
                     case BlendShapePreset.Angry:
                         value_Angry += clipWeight * behaviour.blendShapeValue;
                         isFacial = true;
@@ -146,7 +146,7 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
 
         if (isEditMode) merger = GetEditModeMergerInstance(proxy);
 
-        // �u�����������v�Ɓu��{���y�v�ǂ���𑀍삷�邩���f���ēK�p����
+        // 「あいうえお」と「喜怒哀楽」どちらを操作するか判断して適用する
         if (isLipSync)
         {
             if(isEditMode){
