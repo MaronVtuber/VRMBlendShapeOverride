@@ -14,7 +14,7 @@ https://qiita.com/Maron_Vtuber/items/2ca5446fae83089f011e
 YouTubeにて使い方の動画を出しています
 https://youtu.be/JP2CstQHIvk
 
-## MITライセンス
+## ライセンス
 The MIT License
 Copyright (c) 2022 八ツ橋まろん
 
