@@ -1,4 +1,6 @@
 VRM Blend Shape Override
+Version 0.1.1 (2023/1/15)
+  Editモードで動作するように変更
 
 Version 0.1.0 (2022/12/10)
   First release
