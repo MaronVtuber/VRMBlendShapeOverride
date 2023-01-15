@@ -6,9 +6,37 @@ using VRM;
 
 public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
 {
+
+    private static Dictionary<int, BlendShapeMerger> _mergers = new Dictionary<int, BlendShapeMerger>();
+    private static void ResetMergerInstance()
+    {
+        _mergers = new Dictionary<int, BlendShapeMerger>();
+    }
+
+    private static BlendShapeMerger GetEditModeMergerInstance(VRMBlendShapeProxy proxy)
+    {
+        var go = proxy.gameObject;
+        var id = go.GetInstanceID();
+        if (!_mergers.ContainsKey(id))
+        {
+            _mergers.Add(id, new BlendShapeMerger(proxy.BlendShapeAvatar.Clips,go.transform));
+        }
+
+        return _mergers[id];
+
+    }
+    
     public TimelineClip[] Clips { get; set; }
     public PlayableDirector Director { get; set; }
 
+    public override void OnGraphStart( Playable playable ) {
+
+        ResetMergerInstance();
+        base.OnGraphStart( playable );
+    }
+    
+    
+    
     public override void ProcessFrame(Playable playable, FrameData info, object playerData)
     {
         var proxy = playerData as VRMBlendShapeProxy;
@@ -19,14 +47,14 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
 
         var time = Director.time;
 
-        // ÅuÇ†Ç¢Ç§Ç¶Ç®Åv
+        // „Äå„ÅÇ„ÅÑ„ÅÜ„Åà„Åä„Äç
         var value_A = 0f;
         var value_I = 0f;
         var value_U = 0f;
         var value_E = 0f;
         var value_O = 0f;
 
-        // ÅuäÏì{à£äyÅv
+        // „ÄåÂñúÊÄíÂìÄÊ•Ω„Äç
         var value_Angry = 0f;
         var value_Blink = 0f;
         var value_Blink_L = 0f;
@@ -51,7 +79,7 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
             {
                 switch (behaviour.blendShapePreset)
                 {
-                    // ÅuÇ†Ç¢Ç§Ç¶Ç®Åv
+                    // „Äå„ÅÇ„ÅÑ„ÅÜ„Åà„Åä„Äç
                     case BlendShapePreset.A:
                         value_A += clipWeight * behaviour.blendShapeValue;
                         isLipSync = true;
@@ -76,7 +104,7 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
                         isLipSync = true;
                         break;
 
-                    // ÅuäÏì{à£äyÅv
+                    // „ÄåÂñúÊÄíÂìÄÊ•Ω„Äç
                     case BlendShapePreset.Angry:
                         value_Angry += clipWeight * behaviour.blendShapeValue;
                         isFacial = true;
@@ -113,29 +141,66 @@ public class VrmBlendShapeMixerBehaviour : PlayableBehaviour
             }
         }
 
-        // ÅuÇ†Ç¢Ç§Ç¶Ç®ÅvÇ∆ÅuäÏì{à£äyÅvÇ«ÇøÇÁÇëÄçÏÇ∑ÇÈÇ©îªífÇµÇƒìKópÇ∑ÇÈ
+        var isEditMode = !Application.isPlaying;
+        BlendShapeMerger merger = null;
+
+        if (isEditMode) merger = GetEditModeMergerInstance(proxy);
+
+        // „Äå„ÅÇ„ÅÑ„ÅÜ„Åà„Åä„Äç„Å®„ÄåÂñúÊÄíÂìÄÊ•Ω„Äç„Å©„Å°„Çâ„ÇíÊìç‰Ωú„Åô„Çã„ÅãÂà§Êñ≠„Åó„Å¶ÈÅ©Áî®„Åô„Çã
         if (isLipSync)
         {
-            proxy.SetValues(new Dictionary<BlendShapeKey, float>{
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.A), value_A },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.I), value_I },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.U), value_U },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.E), value_E },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.O), value_O },
-            });
+            if(isEditMode){
+                merger.SetValues(new Dictionary<BlendShapeKey, float>
+                {
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.A), value_A},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.I), value_I},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.U), value_U},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.E), value_E},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.O), value_O},
+                });
+            }
+            else
+            {
+                proxy.SetValues(new Dictionary<BlendShapeKey, float>
+                {
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.A), value_A},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.I), value_I},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.U), value_U},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.E), value_E},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.O), value_O},
+                });
+            }
         }
         else if(isFacial)
         {
-            proxy.SetValues(new Dictionary<BlendShapeKey, float>{
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Angry), value_Angry },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink), value_Blink },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink_L), value_Blink_L },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink_R), value_Blink_R },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Fun), value_Fun },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Joy), value_Joy },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Sorrow), value_Sorrow },
-                {BlendShapeKey.CreateFromPreset(BlendShapePreset.Neutral), value_Netural },
-            });
+            if (isEditMode)
+            {
+                merger.SetValues(new Dictionary<BlendShapeKey, float>
+                {
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Angry), value_Angry},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink), value_Blink},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink_L), value_Blink_L},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink_R), value_Blink_R},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Fun), value_Fun},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Joy), value_Joy},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Sorrow), value_Sorrow},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Neutral), value_Netural},
+                });
+            }
+            else
+            {
+                proxy.SetValues(new Dictionary<BlendShapeKey, float>
+                {
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Angry), value_Angry},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink), value_Blink},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink_L), value_Blink_L},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Blink_R), value_Blink_R},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Fun), value_Fun},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Joy), value_Joy},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Sorrow), value_Sorrow},
+                    {BlendShapeKey.CreateFromPreset(BlendShapePreset.Neutral), value_Netural},
+                });
+            }
         }
     }
 }
